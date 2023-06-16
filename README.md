@@ -1,2 +1,0 @@
-# Petsatagram
-Express exam app
