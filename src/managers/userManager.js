@@ -54,5 +54,10 @@ const login = async(username,password) => {
     return token;
 }
 
+const getOne = (id) => {
+    return User.findById(id).lean();
+}
+
 exports.register = register;
 exports.login = login;
+exports.getOne = getOne;

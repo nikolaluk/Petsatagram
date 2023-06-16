@@ -1,8 +1,11 @@
 const router = require('express').Router();
 
 const userManager = require('../managers/userManager');
+const photoManager = require('../managers/photoManager');
 
-const { userErrorMessage } = require('../utils/helpers')
+const { userErrorMessage } = require('../utils/helpers');
+
+const { isAuth } = require('../middlewares/auth');
 
 //GET
 router.get('/login', (req, res) => {
@@ -13,20 +16,36 @@ router.get('/register', (req, res) => {
     res.render('users/register');
 });
 
-router.get('/logout', (req,res) => {
+router.get('/logout', isAuth, (req, res) => {
     res.clearCookie('token');
     res.redirect('/');
+});
+
+router.get('/:id/profile', isAuth, async (req,res) => {
+    const photos = await photoManager.getAll();
+    const user = await userManager.getOne(req.params.id);
+    let ownedPhotos = [];
+
+    for(const photo of photos){
+        console.log(user)
+        if(photo.owner._id.toString() == user._id.toString()){
+            console.log('in');
+            ownedPhotos.push(photo);
+        }
+    }
+    console.log(ownedPhotos);
+    res.render('users/profile',{ user, ownedPhotos });
 });
 
 //POST
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    try{
-        const token = await userManager.login(username,password);
-        res.cookie('token',token);
+    try {
+        const token = await userManager.login(username, password);
+        res.cookie('token', token);
         res.redirect('/');
-    } catch(err) {
+    } catch (err) {
         const error = userErrorMessage(err)[0];
         res.render('users/login', { error });
     }
@@ -38,8 +57,8 @@ router.post('/register', async (req, res) => {
     try {
         await userManager.register(username, email, password, repeatPassword);
 
-        const token = await userManager.login(username,password);
-        res.cookie('token',token);
+        const token = await userManager.login(username, password);
+        res.cookie('token', token);
 
         res.redirect('/')
     } catch (err) {
