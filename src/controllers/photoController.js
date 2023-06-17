@@ -14,6 +14,8 @@ router.get('/:id/details', async (req, res) => {
     try {
         const photo = await photoManager.getById(req.params.id);
         const isOwner = req.user?._id == photo.owner._id;
+
+        console.log(photo);
         res.render('photos/details', { photo, isOwner })
     } catch (err) {
         res.redirect('/404');
@@ -22,20 +24,20 @@ router.get('/:id/details', async (req, res) => {
 
 router.get('/:id/edit', isAuth, async (req, res) => {
     try {
-        const photo = await photoManager.getById(req.params.id); 
-        if(req.user?._id != photo.owner._id){
+        const photo = await photoManager.getById(req.params.id);
+        if (req.user?._id != photo.owner._id) {
             throw new Error("Not authorised")
         }
-        res.render('photos/edit', {photo})
+        res.render('photos/edit', { photo })
     } catch (err) {
         res.redirect('/404');
     }
 });
 
-router.get('/:id/delete', isAuth, async(req,res) => {
+router.get('/:id/delete', isAuth, async (req, res) => {
     try {
-        const photo = await photoManager.getById(req.params.id); 
-        if(req.user?._id != photo.owner._id){
+        const photo = await photoManager.getById(req.params.id);
+        if (req.user?._id != photo.owner._id) {
             throw new Error("Not authorised")
         }
         await photoManager.deleteById(photo._id);
@@ -62,16 +64,28 @@ router.post('/create', isAuth, async (req, res) => {
 router.post('/:id/edit', isAuth, async (req, res) => {
     try {
         const photoData = req.body;
-        const photo = await photoManager.getById(req.params.id); 
-        if(req.user?._id != photo.owner._id){
+        const photo = await photoManager.getById(req.params.id);
+        if (req.user?._id != photo.owner._id) {
             throw new Error("Not authorised")
         }
-        await photoManager.updateById(req.params.id,photoData);
+        await photoManager.updateById(req.params.id, photoData);
         res.redirect(`/photos/${photo._id}/details`);
     } catch (err) {
         const error = userErrorMessage(err)[0];
-        res.render(`photos/edit`,{error});
+        res.render(`photos/edit`, { error });
     }
+});
+
+router.post('/:id/details', async (req, res) => {
+    const { comment } = req.body;
+    const id = req.params.id;
+
+    const photo = await photoManager.getById(id);
+    const commentList = photo.commentList;
+    commentList.push({ user: req.user._id, comment: comment });
+    await photoManager.updateById(id, {commentList});
+
+    res.redirect(`/photos/${id}/details`);
 });
 
 module.exports = router;

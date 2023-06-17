@@ -13,7 +13,7 @@ const getAll = async() => {
 }
 
 const getById = (id) => {
-    return Photo.findById(id).populate('owner').lean();
+    return Photo.findById(id).populate('owner').populate('commentList.user').lean();
 }
 
 const updateById = function (id, photoData) {

@@ -21,7 +21,7 @@ router.get('/logout', isAuth, (req, res) => {
     res.redirect('/');
 });
 
-router.get('/:id/profile', isAuth, async (req,res) => {
+router.get('/:id/profile', async (req,res) => {
     const photos = await photoManager.getAll();
     const user = await userManager.getOne(req.params.id);
     let ownedPhotos = [];
