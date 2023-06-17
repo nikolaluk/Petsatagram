@@ -14,8 +14,7 @@ router.get('/:id/details', async (req, res) => {
     try {
         const photo = await photoManager.getById(req.params.id);
         const isOwner = req.user?._id == photo.owner._id;
-
-        console.log(photo);
+        
         res.render('photos/details', { photo, isOwner })
     } catch (err) {
         res.redirect('/404');
